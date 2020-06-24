@@ -1,6 +1,8 @@
 from parsing_base import Parser
 from bs4 import BeautifulSoup
 import re
+import xlwt
+
 
 class DecorParser(Parser):
     def __init__(self):
@@ -101,8 +103,49 @@ class DecorParser(Parser):
                     subcategorie['subsubcategories'].append(subsubcategorie)
             category['subcategories'].append(subcategorie)
 
-if __name__ == '__main__':
+    def save_data_xls(self):
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('sheet')
+        target_row = 1
+        ws.write(0, 0, 'Категория')
+        ws.write(0, 1, 'Подкатегория')
+        ws.write(0, 2, 'Подподкатегория')
+        ws.write(0, 3, 'Наименование TEXTURE')
+        ws.write(0, 4, 'Ссылка на изображение TEXTURE')
+        ws.write(0, 5, 'Наименование цвета')
+        ws.write(0, 6, 'Ссылка на изображение')
+        for categorie in self.categories:
+            ws.write(target_row, 0, categorie['name'])
+            for subcategorie in categorie['subcategories']:
+                ws.write(target_row, 1, subcategorie['name'])
+                for subsubcategorie in subcategorie['subsubcategories']:
+                    ws.write(target_row, 2, subsubcategorie['name'])
+                    target_row_1 = target_row
+                    for texture in subsubcategorie['textures']:
+                        ws.write(target_row_1, 3, texture['name'])
+                        ws.write(target_row_1, 4, texture['url'])
+                        target_row_1 += 1
+                    target_row_2 = target_row
+                    for colors in subsubcategorie['colors']:
+                        ws.write(target_row_2, 5, colors['name'])
+                        ws.write(target_row_2, 6, colors['url'])
+                        target_row_2 += 1
+                    if target_row_2 >= target_row_1:
+                        target_row = target_row_2
+                    else:
+                        target_row = target_row_1
+                    target_row += 1
+
+        wb.save('data.xls')
+
+
+def main():
     parser = DecorParser()
     parser.update_categories()
     parser.update_subcategories()
     parser.update_textures_colors()
+    parser.save_data_xls()
+
+
+if __name__ == '__main__':
+    main()
